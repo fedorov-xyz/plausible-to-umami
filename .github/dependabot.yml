@@ -18,3 +18,11 @@ updates:
       semver-major-days: 7
       semver-minor-days: 7
       semver-patch-days: 7
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope
