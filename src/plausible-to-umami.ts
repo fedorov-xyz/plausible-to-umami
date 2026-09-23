@@ -52,6 +52,7 @@ import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
 import { uniformInt } from 'pure-rand/distribution/uniformInt';
 import { xoroshiro128plusFromState } from 'pure-rand/generator/xoroshiro128plus';
 import type { RandomGenerator } from 'pure-rand/types/RandomGenerator';
+import { v7 as uuidv7 } from 'uuid';
 
 const TAG = 'plausible-import';
 
@@ -135,12 +136,11 @@ class Rng {
     return this.shuffle([...arr]).slice(0, k);
   }
 
-  uuid(): string {
-    const b = Array.from({ length: 16 }, () => this.int(0, 255));
-    b[6] = (b[6] & 0x0f) | 0x40;
-    b[8] = (b[8] & 0x3f) | 0x80;
-    const h = b.map((x) => x.toString(16).padStart(2, '0')).join('');
-    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  // UUIDv7 like Umami with USE_UUIDV7: ids of rows inserted in time order land at the end of the
+  // indexes instead of random pages
+  uuid(time: Date | number): string {
+    const random = Uint8Array.from({ length: 16 }, () => this.int(0, 255));
+    return uuidv7({ msecs: typeof time === 'number' ? time : time.getTime(), random });
   }
 }
 
@@ -514,7 +514,7 @@ function* generateDays(
       const pvSplit = splitInt(Math.max(toInt(r.pageviews) - b, nb), nb, rng, 2);
       const durSplit = splitInt(toInt(r.visit_duration), nb, rng);
       const mk = (bounced: boolean, pv: number, dur: number): Visit => ({
-        id: rng.uuid(),
+        id: '',
         entry: r.entry_page,
         bounced,
         pageviews: pv,
@@ -600,6 +600,7 @@ function* generateDays(
     for (const v of visits) {
       const d = Math.min(v.duration, daySec);
       v.start = dayStart + rng.int(0, daySec - d) * 1000;
+      v.id = rng.uuid(v.start);
       if (v.pageviews === 1) {
         v.times = [v.start];
       } else {
@@ -613,7 +614,7 @@ function* generateDays(
     // sessions = visitors of the day: OS/device/browser are correlated, geo is independent
     const nSess = Math.max(1, Math.min(nVisitors, nVisits));
     const daySessions: Session[] = Array.from({ length: nSess }, () => ({
-      id: rng.uuid(),
+      id: '',
       createdAt: null,
       browser: null,
       os: null,
@@ -659,7 +660,10 @@ function* generateDays(
       const t = new Date(v.start);
       if (!s.createdAt || t < s.createdAt) s.createdAt = t;
     }
-    for (const s of daySessions) s.createdAt ??= new Date(dayStart);
+    for (const s of daySessions) {
+      s.createdAt ??= new Date(dayStart);
+      s.id = rng.uuid(s.createdAt);
+    }
 
     // sources: bounce slots go to bounced visits, the rest to the others
     type Src = [referrer: string, utm: Record<string, string>];
@@ -717,7 +721,7 @@ function* generateDays(
         const query = q || (Object.keys(utm).length ? new URLSearchParams(utm).toString() : null);
         const [rd, rp, rq] = i === 0 ? v.ref : [null, null, null];
         events.push([
-          rng.uuid(),
+          rng.uuid(v.times[i]),
           websiteId,
           v.session!.id,
           v.id,
@@ -740,8 +744,8 @@ function* generateDays(
       });
     }
     for (const [v, name, props] of custom) {
-      const eid = rng.uuid();
       const ts = new Date(v.times[0] + (v.times[v.times.length - 1] - v.times[0]) * rng.next());
+      const eid = rng.uuid(ts);
       const path = rng.pick(v.pages).split('?')[0];
       events.push([
         eid,
@@ -766,7 +770,7 @@ function* generateDays(
       ]);
       for (const [key, val] of Object.entries(props)) {
         eventData.push([
-          rng.uuid(),
+          rng.uuid(ts),
           websiteId,
           eid,
           key.slice(0, 500),

@@ -45,7 +45,8 @@
     "es-toolkit": "^1.52.0",
     "pg": "^8.23.0",
     "pure-rand": "^8.4.2",
-    "tsx": "^4.23.13"
+    "tsx": "^4.23.13",
+    "uuid": "^14.0.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
