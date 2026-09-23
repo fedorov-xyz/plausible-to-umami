@@ -1,0 +1,55 @@
+{
+  "name": "plausible-to-umami",
+  "version": "1.0.0",
+  "description": "Migrate Plausible Analytics history (CSV export) into Umami v3 on PostgreSQL: sessions, pageviews, bounces, visit duration, sources, geo and custom events",
+  "keywords": [
+    "plausible",
+    "plausible-analytics",
+    "plausible-export",
+    "umami",
+    "umami-analytics",
+    "migration",
+    "import",
+    "analytics",
+    "web-analytics",
+    "privacy-friendly-analytics",
+    "self-hosted",
+    "postgresql",
+    "csv",
+    "google-analytics-alternative"
+  ],
+  "homepage": "https://github.com/fedorov-xyz/plausible-to-umami#readme",
+  "bugs": {
+    "url": "https://github.com/fedorov-xyz/plausible-to-umami/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fedorov-xyz/plausible-to-umami.git"
+  },
+  "author": {
+    "name": "Igor Fedorov",
+    "url": "https://github.com/fedorov-xyz"
+  },
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=25"
+  },
+  "scripts": {
+    "migrate": "tsx --env-file-if-exists=.env src/plausible-to-umami.ts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@fast-csv/parse": "^5.0.7",
+    "es-toolkit": "^1.52.0",
+    "pg": "^8.23.0",
+    "pure-rand": "^8.4.2",
+    "tsx": "^4.23.13"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "@types/pg": "^8.23.1",
+    "typescript": "^7.0.2"
+  }
+}
