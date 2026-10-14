@@ -41,11 +41,11 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@fast-csv/parse": "^5.0.7",
+    "@fast-csv/parse": "^5.0.8",
     "es-toolkit": "^1.52.0",
-    "pg": "^8.23.0",
+    "pg": "^8.23.1",
     "pure-rand": "^8.4.2",
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.15",
     "uuid": "^14.0.2"
   },
   "devDependencies": {
